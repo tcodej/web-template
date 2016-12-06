@@ -106,7 +106,7 @@ app.share = (function() {
             FB.init({
                 appId: fbid[mode],
                 xfbml: true,
-                version: 'v2.4'
+                version: 'v2.8'
             });
         },
 

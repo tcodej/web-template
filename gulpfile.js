@@ -12,6 +12,7 @@ var gulp = require('gulp'),
 // These profiles should be set up in your ~/.aws/config with the proper keys
 var AWS_PROFILE = '',
     AWS_CF_PROD = '',
+    GOOGLE_ID = 'UA-XXXXXXXX-1',
     // these are used in the share meta data in index.html when building the site
     domains = {
       "test": "http://test.example.com",
@@ -56,7 +57,7 @@ gulp.task('useref', ['sass'], function () {
 });
 
 /**
- * Replace one string with another. Using it here to simply add a build date
+ * Replace one string with another when parsing html files for build.
  */
 gulp.task('inject:replace', ['useref'], function() {
     var domain = domains['test'];
@@ -64,9 +65,10 @@ gulp.task('inject:replace', ['useref'], function() {
       domain = domains['prod'];
     }
     var now = new Date();
-    return gulp.src('./dist/index.html')
+    return gulp.src('./dist/*.html')
       .pipe(inject.replace('{inject:build-date}', now.toUTCString()))
       .pipe(inject.replace('{inject:domain}', domain))
+      .pipe(inject.replace('UA-XXXXXXXX-X', GOOGLE_ID))
       .pipe(gulp.dest('./dist'));
 });
 
@@ -74,10 +76,15 @@ gulp.task('inject:replace', ['useref'], function() {
  * Simply copy supporting files from src to dist
  */
 gulp.task('copy-files', ['useref'], function() {
-  // images
-  gulp.src('./src/img/**/*')
-    .pipe(gulp.dest('./dist/img'));
+  // list of folders in src directory that should be copied directly to dist when building
+  var folders = ['img'];
 
+  for (var folder of folders) {
+    gulp.src('./src/'+ folder +'/**/*')
+      .pipe(gulp.dest('./dist/'+ folder));
+  }
+
+  // list of individual files in src directory that should be copied directly to dist when building
   gulp.src(['./src/favicon.ico', './src/robots.txt'])
     .pipe(gulp.dest('./dist'));
 });
