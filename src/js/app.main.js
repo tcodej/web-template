@@ -156,11 +156,6 @@ app.service = (function() {
             test: '',
             live: ''
         },
-        donateURL = {
-            local: '',
-            test: '',
-            live: ''
-        },
         self = {
 
         init: function() {
@@ -173,12 +168,6 @@ app.service = (function() {
                 break;
                 case 'www.example.com':
                     mode = 'live';
-                    // force https
-                    // if (location.protocol != 'https:') {
-                    //     $('body').empty();
-                    //     window.location.replace('https://www.example.com');
-                    //     return;
-                    // }
                 break;
             }
             console.log('Mode: '+ mode);
