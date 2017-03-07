@@ -3,20 +3,27 @@
   "version": "1.0.0",
   "description": "Basic starting point for a front-end web site.",
   "main": "gulpfile.js",
-  "author": "Trent Johnson",
+  "author": "Trent Johnson <github@trentj.org>",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tcodej/web-template"
+  },
   "dependencies": {},
   "devDependencies": {
-    "gulp": "^3.9.1",
-    "gulp-clean": "^0.3.2",
-    "gulp-if": "^2.0.1",
-    "gulp-inject-string": "^1.1.0",
-    "gulp-sass": "^2.3.2",
-    "gulp-shell": "^0.5.2",
-    "gulp-uglify": "^2.0.0",
-    "gulp-useref": "^3.1.2",
-    "gulp-watch": "^4.3.10",
-    "gulp-webserver": "^0.9.1",
-    "yargs": "^6.3.0"
+    "gulp": "*",
+    "gulp-clean": "*",
+    "gulp-if": "*",
+    "gulp-inject-string": "*",
+    "gulp-sass": "*",
+    "gulp-shell": "*",
+    "gulp-uglify": "*",
+    "gulp-useref": "*",
+    "gulp-watch": "*",
+    "gulp-webserver": "*",
+    "yargs": "*"
   }
 }
+
+
+

@@ -18,7 +18,7 @@ app.main = (function() {
             app.share.init();
             //self.load();
 
-            $('section').append(self.getTemplate('example', { data: 'Hurray!' }));
+            $('#main').append(self.getTemplate('example', { data: 'Hurray!' }));
         },
 
         /**
@@ -86,14 +86,16 @@ app.share = (function() {
 
         init: function() {
             // enable share buttons
-            $('.share.facebook').off('click').on('click', function() {
+            $('.share.facebook').off('click').on('click', function(e) {
+                e.preventDefault();
                 app.share.shareFacebook({
                     description: 'Facebook share description',
                     caption: 'example.com'
                 });
             });
 
-            $('.share.twitter').off('click').on('click', function() {
+            $('.share.twitter').off('click').on('click', function(e) {
+                e.preventDefault();
                 app.share.shareTwitter({
                     twitter: 'Twitter share description',
                     hashtags: 'hashtag'
