@@ -1,47 +1,73 @@
 var gulp = require('gulp'),
-    useref = require('gulp-useref'),
-    gulpif = require('gulp-if'),
-    uglify = require('gulp-uglify'),
-    sass = require('gulp-sass'),
-    clean = require('gulp-clean'),
-    webserver = require('gulp-webserver'),
-    shell = require('gulp-shell'),
-    inject = require('gulp-inject-string'),
-    argv = require('yargs').argv;
+  useref = require('gulp-useref'),
+  gulpif = require('gulp-if'),
+  uglify = require('gulp-uglify'),
+  htmlmin = require('gulp-htmlmin'),
+  sass = require('gulp-sass'),
+  sourcemaps = require('gulp-sourcemaps'),
+  clean = require('gulp-clean'),
+  webserver = require('gulp-webserver'),
+  shell = require('gulp-shell'),
+  inject = require('gulp-inject-string'),
+  argv = require('yargs').argv;
 
 // These profiles should be set up in your ~/.aws/config with the proper keys
-var AWS_PROFILE = '',
-    AWS_CF_PROD = '',
-    GOOGLE_ID = 'UA-XXXXXXXX-1',
+var AWS_PROFILE = 'YOUR_PROFILE_NAME',
+
+    googleAnalytics = {
+      'test': 'UA-XXXXXXXXX-1',
+      'production': 'UA-XXXXXXXXX-1'
+    },
+    
+    googleTagManager = {
+      'test': 'GTM-XXXXXXX',
+      'production': 'GTM-XXXXXXX'
+    },
+
+    cloudfront = {
+      'test': 'XXXXXXXXXXXXXX',
+      'production': 'XXXXXXXXXXXXXX'
+    },
+
     // these are used in the share meta data in index.html when building the site
     domains = {
-      "test": "http://test.example.com",
-      "prod": "http://www.example.com"
+      'test': 'http://test.example.com',
+      'production': 'http://www.example.com'
     };
 
 /**
- * Clear out the dist directory
+ * Clear out the dist directory and compiled css in the src directory
  */
-gulp.task('clean', function () {
-    return gulp.src('./dist', {read: false})
-      .pipe(clean());
+gulp.task('clean', function() {
+  gulp.src('./src/css/**/*.css', {
+      read: false
+    })
+    .pipe(clean());
+  return gulp.src('./dist', {
+      read: false
+    })
+    .pipe(clean());
 });
 
 /**
  * Compile sass to the src/css directory. Let useref combine the files and copy to dist/css
  */
-gulp.task('sass', function () {
+gulp.task('sass', function() {
   return gulp.src('./src/scss/**/*.scss')
-    .pipe(sass.sync({outputStyle: 'compressed'}).on('error', sass.logError))
+    .pipe(sass.sync({
+      outputStyle: 'compressed'
+    }).on('error', sass.logError))
     .pipe(gulp.dest('./src/css'));
 });
 
 /**
  * Compile sass but don't compress.
  */
-gulp.task('sass-src', function () {
+gulp.task('sass-src', function() {
   return gulp.src('./src/scss/**/*.scss')
+    .pipe(sourcemaps.init())
     .pipe(sass.sync().on('error', sass.logError))
+    .pipe(sourcemaps.write())
     .pipe(gulp.dest('./src/css'));
 });
 
@@ -49,7 +75,7 @@ gulp.task('sass-src', function () {
 /**
  * Minify, replace .js and .css paths in index.html using gulp-useref and copy to the dist directory
  */
-gulp.task('useref', ['sass'], function () {
+gulp.task('useref', ['sass'], function() {
   return gulp.src('./src/*.html')
     .pipe(useref())
     .pipe(gulpif('*.js', uglify()))
@@ -60,28 +86,47 @@ gulp.task('useref', ['sass'], function () {
  * Replace one string with another when parsing html files for build.
  */
 gulp.task('inject:replace', ['useref'], function() {
-    var domain = domains['test'];
-    if (argv.prod) {
-      domain = domains['prod'];
-    }
-    var now = new Date();
-    return gulp.src('./dist/*.html')
-      .pipe(inject.replace('{inject:build-date}', now.toUTCString()))
-      .pipe(inject.replace('{inject:domain}', domain))
-      .pipe(inject.replace('UA-XXXXXXXX-X', GOOGLE_ID))
-      .pipe(gulp.dest('./dist'));
+  var env = 'test'
+
+  if (argv.prod || argv.production) {
+    env = 'production';
+  }
+
+  var now = Date.now();
+
+  return gulp.src('./dist/*.html')
+    .pipe(inject.replace('{inject:env}', env))
+    .pipe(inject.replace('{inject:build-date}', new Date()))
+    .pipe(inject.replace('{inject:domain}', domains[env]))
+    .pipe(inject.replace('UA-XXXXXXXX-X', googleAnalytics[env]))
+    .pipe(inject.replace('GTM-XXXXXXX', googleTagManager[env]))
+    .pipe(inject.replace('.min.js"', '.min.js?v='+ now +'"'))
+    .pipe(inject.replace('.min.css"', '.min.css?v='+ now +'"'))
+    .pipe(htmlmin({
+      removeComments: true,
+      collapseWhitespace: true
+      /*
+      processScripts: ['text/x-handlebars-template'],
+      customAttrSurround: [
+        [ /\{\{#if\s+\w+\}\}/, /\{\{\/if\}\}/ ],
+        [ /\{\{#unless\s+\w+\}\}/, /\{\{\/unless\}\}/ ]
+      ]
+      */
+    }))
+    .pipe(gulp.dest('./dist'));
 });
+
 
 /**
  * Simply copy supporting files from src to dist
  */
 gulp.task('copy-files', ['useref'], function() {
   // list of folders in src directory that should be copied directly to dist when building
-  var folders = ['img'];
+  var folders = ['img', 'fonts'];
 
   for (var folder of folders) {
-    gulp.src('./src/'+ folder +'/**/*')
-      .pipe(gulp.dest('./dist/'+ folder));
+    gulp.src('./src/' + folder + '/**/*')
+      .pipe(gulp.dest('./dist/' + folder));
   }
 
   // list of individual files in src directory that should be copied directly to dist when building
@@ -93,16 +138,16 @@ gulp.task('copy-files', ['useref'], function() {
  * Watch for updates and recompile
  */
 gulp.task('watch', function() {
-    gulp.watch('./src/*.html', ['useref', 'inject:replace']);
-    gulp.watch('./src/js/*.js', ['useref']);
-    gulp.watch('./src/scss/**/*.scss', ['sass', 'useref']);
+  gulp.watch('./src/*.html', ['useref', 'inject:replace']);
+  gulp.watch('./src/js/*.js', ['useref']);
+  gulp.watch('./src/scss/**/*.scss', ['sass', 'useref']);
 });
 
 /**
- * Watch for updates and recompile when serving the source files (gulp dev)
+ * Watch for updates and recompile when serving the source files
  */
 gulp.task('watch-src', function() {
-    gulp.watch('./src/scss/**/*.scss', ['sass-src']);
+  gulp.watch('./src/scss/**/*.scss', ['sass-src']);
 });
 
 /**
@@ -113,7 +158,8 @@ gulp.task('webserver', ['copy-files'], function() {
     .pipe(webserver({
       livereload: false,
       directoryListing: false,
-      open: false
+      open: false,
+      port: 8000
     }));
 });
 
@@ -122,7 +168,8 @@ gulp.task('webserver-src', function() {
     .pipe(webserver({
       livereload: false,
       directoryListing: false,
-      open: false
+      open: false,
+      port: 8000
     }));
 });
 
@@ -135,21 +182,40 @@ gulp.task('deploy', function() {
   // set this to what ever your default bucket will be
   var bucket = 'test.example.com';
 
-  if (argv.prod) {
+  if (argv.prod || argv.production) {
     bucket = 'www.example.com';
   }
 
+  // option to exclude some non-changing items to save upload time
+  var exclude = '';
+  if (argv.quick) {
+    exclude = '--exclude "img/*" --exclude "fonts/*" ';
+  }
+
   // gulp needs something for src, so the file doesn't matter as long as it exists
-  return gulp.src('./src/index.html', {read: false})
-    .pipe(shell('aws s3 cp ./dist s3://'+ bucket +' --recursive --profile '+ AWS_PROFILE));
+  return gulp.src('./src/index.html', {
+      read: false
+    })
+    .pipe(shell('aws s3 cp ./dist s3://'+ bucket +' --recursive '+ exclude +' --profile '+ AWS_PROFILE));
 });
 
 /**
- * Invalidate CloudFront cache for test
+ * Invalidate CloudFront cache
  * Must allow this command manually before using: aws configure set preview.cloudfront true
  */
-gulp.task('cf-prod', shell.task('aws cloudfront create-invalidation --paths "/*" --distribution-id '+ AWS_CF_PROD +' --profile '+ AWS_PROFILE));
+gulp.task('cf', function() {
+  var env = 'test'
 
+  if (argv.prod || argv.production) {
+    env = 'production';
+  }
+
+  // gulp needs something for src, so the file doesn't matter as long as it exists
+  return gulp.src('./src/index.html', {
+      read: false
+    })
+    .pipe(shell('aws cloudfront create-invalidation --paths "/*" --distribution-id '+ cloundfront[env] +' --profile '));
+});
 
 
 
@@ -161,7 +227,3 @@ gulp.task('dist', ['sass', 'useref', 'inject:replace', 'copy-files', 'webserver'
 
 // This compiles to the dist directory to prep for deployment. Does not launch a webserver.
 gulp.task('build', ['sass', 'useref', 'inject:replace', 'copy-files']);
-
-
-
-

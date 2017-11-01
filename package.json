@@ -18,12 +18,11 @@
     "gulp-sass": "*",
     "gulp-shell": "*",
     "gulp-uglify": "*",
+    "gulp-htmlmin": "*",
     "gulp-useref": "*",
     "gulp-watch": "*",
     "gulp-webserver": "*",
-    "yargs": "*"
+    "yargs": "*",
+    "translate-json-object": "*"
   }
 }
-
-
-

@@ -1,45 +1,21 @@
-// Browser Prefixes
-@mixin transform($transforms) {
-  -webkit-transform: $transforms;
-  -moz-transform: $transforms;
-  -ms-transform: $transforms;
-  transform: $transforms;
-}
+/* ----- VARS ----- */
 
-html {
-  -webkit-text-size-adjust: 100%;
+$black: #000;
+
+@import 'mixins';
+@import 'reset';
+@import 'fonts';
+
+html, body {
+  width: 100%;
+  min-height: 100vh;
 }
 
 body {
+  -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
-  font-size: 14px;
-  color: #000;
-}
-
-// clearfix...
-.group:after {
-  content: "";
-  display: table;
-  clear: both;
-}
-
-.center-x {
-  position: absolute;
-  left: 50%;
-  @include transform(translateX(-50%));
-}
-
-.center-y {
-  position: absolute;
-  top: 50%;
-  @include transform(translateY(-50%));
-}
-
-.center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  @include transform(translate(-50%, -50%));
+  -webkit-tap-highlight-color: transparent;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 strong {
