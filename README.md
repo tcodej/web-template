@@ -1,5 +1,7 @@
-## MyYL.com admin front end
-Dev URL: https://www.ylpwsdev.com/admin  
+## Basic front-end template
+
+Test URL: http://test.example.com   
+Live URL: http://www.example.com
 
 Requires [node](https://nodejs.org/en/), [npm](https://www.npmjs.com/), [gulp](http://gulpjs.com/).
 
@@ -39,4 +41,6 @@ From the command line `cd` into your working directory for this repo.
 
 Optional helpful commands
 
-`$gulp deploy --quick [--development|--test|--production]` Deploys the build directory but skips supporting media files that aren't often updated and have previously been deployed. Add to or remove from that list in [gulpfile.js](./gulpfile.js#L180)
+1. `$gulp deploy --quick [--development|--test|--production]` Deploys the build directory but skips supporting media files that aren't often updated and have previously been deployed. Add to or remove from that list in [gulpfile.js](./gulpfile.js#L180)
+2. `$ gulp lint` Javascript linter.
+
