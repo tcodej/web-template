@@ -1,0 +1,15 @@
+{
+	"page": "index",
+	"title": "Company Name Web Site",
+	"carousel": {
+		"slides": [{
+			"title": "Slide One",
+			"caption": "A brief amount of text to display on the slide.",
+			"image": "img/share-twitter.png"
+		}, {
+			"title": "Slide Two",
+			"caption": "A brief amount of text to display on the slide.",
+			"image": "img/share-facebook.png"
+		}]
+	}
+}

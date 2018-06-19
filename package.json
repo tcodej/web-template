@@ -9,8 +9,7 @@
     "type": "git",
     "url": "https://github.com/tcodej/web-template"
   },
-  "dependencies": {},
-  "devDependencies": {
+  "dependencies": {
     "gulp": "*",
     "gulp-clean": "*",
     "gulp-if": "*",
@@ -22,7 +21,13 @@
     "gulp-useref": "*",
     "gulp-watch": "*",
     "gulp-webserver": "*",
-    "yargs": "*",
-    "translate-json-object": "*"
+    "gulp-sourcemaps": "*",
+    "yargs": "*"
+  },
+  "devDependencies": {
+    "gulp-jshint": "^2.1.0",
+    "gulp-rename": "^1.2.2",
+    "jshint": "^2.9.5",
+    "jshint-stylish": "^2.2.1"
   }
 }

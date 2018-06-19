@@ -9,31 +9,52 @@ var gulp = require('gulp'),
   webserver = require('gulp-webserver'),
   shell = require('gulp-shell'),
   inject = require('gulp-inject-string'),
-  argv = require('yargs').argv;
+  argv = require('yargs').argv,
+  jshint = require('gulp-jshint');
+  
+  // return environment based on args --development --test --production
+  function getEnv() {
+    if (argv.test) return 'test';
+    if (argv.prod || argv.production) return 'production';
+    // development is default
+    return 'development';
+  };
+
 
 // These profiles should be set up in your ~/.aws/config with the proper keys
-var AWS_PROFILE = 'YOUR_PROFILE_NAME',
+var AWS_PROFILE = 'wk-pdx2',
 
     googleAnalytics = {
-      'test': 'UA-XXXXXXXXX-1',
-      'production': 'UA-XXXXXXXXX-1'
+      'development': 'UA-XXXXXXXX-X',
+      'test': 'UA-XXXXXXXX-X',
+      'production': 'UA-XXXXXXXX-X'
     },
-    
+
     googleTagManager = {
+      'development': 'GTM-XXXXXXX',
       'test': 'GTM-XXXXXXX',
       'production': 'GTM-XXXXXXX'
     },
 
     cloudfront = {
-      'test': 'XXXXXXXXXXXXXX',
-      'production': 'XXXXXXXXXXXXXX'
+      'development': '',
+      'test': '',
+      'production': ''
     },
 
     // these are used in the share meta data in index.html when building the site
-    domains = {
+    domain = {
+      'development': 'http://dev.example.com',
       'test': 'http://test.example.com',
       'production': 'http://www.example.com'
+    },
+    
+    bucket = {
+      'development': 'remark-preview/v2',
+      'test': 'remark-preview/v2',
+      'production': 'remark-preview/v2'
     };
+
 
 /**
  * Clear out the dist directory and compiled css in the src directory
@@ -49,6 +70,7 @@ gulp.task('clean', function() {
     .pipe(clean());
 });
 
+
 /**
  * Compile sass to the src/css directory. Let useref combine the files and copy to dist/css
  */
@@ -59,6 +81,7 @@ gulp.task('sass', function() {
     }).on('error', sass.logError))
     .pipe(gulp.dest('./src/css'));
 });
+
 
 /**
  * Compile sass but don't compress.
@@ -82,36 +105,28 @@ gulp.task('useref', ['sass'], function() {
     .pipe(gulp.dest('./dist'));
 });
 
+
 /**
  * Replace one string with another when parsing html files for build.
  */
 gulp.task('inject:replace', ['useref'], function() {
-  var env = 'test'
+    var now = Date.now();
 
-  if (argv.prod || argv.production) {
-    env = 'production';
-  }
-
-  var now = Date.now();
-
-  return gulp.src('./dist/*.html')
-    .pipe(inject.replace('{inject:env}', env))
-    .pipe(inject.replace('{inject:build-date}', new Date()))
-    .pipe(inject.replace('{inject:domain}', domains[env]))
-    .pipe(inject.replace('UA-XXXXXXXX-X', googleAnalytics[env]))
-    .pipe(inject.replace('GTM-XXXXXXX', googleTagManager[env]))
-    .pipe(inject.replace('.min.js"', '.min.js?v='+ now +'"'))
-    .pipe(inject.replace('.min.css"', '.min.css?v='+ now +'"'))
-    .pipe(htmlmin({
-      removeComments: true,
-      collapseWhitespace: true
-      /*
-      processScripts: ['text/x-handlebars-template'],
-      customAttrSurround: [
-        [ /\{\{#if\s+\w+\}\}/, /\{\{\/if\}\}/ ],
-        [ /\{\{#unless\s+\w+\}\}/, /\{\{\/unless\}\}/ ]
-      ]
-      */
+    return gulp.src('./dist/*.html')
+      .pipe(inject.replace('{inject:env}', getEnv()))
+      .pipe(inject.replace('{inject:build-date}', new Date()))
+      .pipe(inject.replace('{inject:domain}', domain[getEnv()]))
+      .pipe(inject.replace('UA-XXXXXXXX-X', googleAnalytics[getEnv()]))
+      .pipe(inject.replace('GTM-XXXXXXX', googleTagManager[getEnv()]))
+      .pipe(inject.replace('.min.js"', '.min.js?v='+ now +'"'))
+      .pipe(inject.replace('.min.css"', '.min.css?v='+ now +'"'))
+      .pipe(htmlmin({
+        removeComments: true,
+        collapseWhitespace: true,
+        processScripts: ['text/x-handlebars-template'],
+        customAttrSurround: [
+          [ /\{\{#[^}]+\}\}/, /\{\{\/[^}]+\}\}/ ]
+        ]
     }))
     .pipe(gulp.dest('./dist'));
 });
@@ -122,7 +137,7 @@ gulp.task('inject:replace', ['useref'], function() {
  */
 gulp.task('copy-files', ['useref'], function() {
   // list of folders in src directory that should be copied directly to dist when building
-  var folders = ['img', 'fonts'];
+  var folders = ['img', 'fonts', 'json', 'templates'];
 
   for (var folder of folders) {
     gulp.src('./src/' + folder + '/**/*')
@@ -134,6 +149,7 @@ gulp.task('copy-files', ['useref'], function() {
     .pipe(gulp.dest('./dist'));
 });
 
+
 /**
  * Watch for updates and recompile
  */
@@ -143,12 +159,25 @@ gulp.task('watch', function() {
   gulp.watch('./src/scss/**/*.scss', ['sass', 'useref']);
 });
 
+
 /**
  * Watch for updates and recompile when serving the source files
  */
 gulp.task('watch-src', function() {
   gulp.watch('./src/scss/**/*.scss', ['sass-src']);
 });
+
+
+/**
+ * Run this to periodically sanity check your js formatting
+ */
+gulp.task('lint', function() {
+  return gulp.src('./src/js/*.js')
+    .pipe(jshint())
+    .pipe(jshint.reporter('jshint-stylish'))
+    .pipe(jshint.reporter('fail'));
+});
+
 
 /**
  * If you don't want to use your own webserver, use this
@@ -163,6 +192,7 @@ gulp.task('webserver', ['copy-files'], function() {
     }));
 });
 
+
 gulp.task('webserver-src', function() {
   gulp.src('./src')
     .pipe(webserver({
@@ -173,57 +203,45 @@ gulp.task('webserver-src', function() {
     }));
 });
 
+
+
 /**
- * Deploy the test S3 bucket
+ * Local dev command line deploy
  * (You'll need the AWS CLI installed and a profile set up in ~/.aws/config)
+ * Always use Codepipline branches to deploy, but occasionally this can come in handy to quickly test on dev or for emergency deploys
  */
 gulp.task('deploy', function() {
-
-  // set this to what ever your default bucket will be
-  var bucket = 'test.example.com';
-
-  if (argv.prod || argv.production) {
-    bucket = 'www.example.com';
-  }
-
-  // option to exclude some non-changing items to save upload time
+  // when testing, exclude some non-changing items to save upload time
   var exclude = '';
   if (argv.quick) {
-    exclude = '--exclude "img/*" --exclude "fonts/*" ';
+    exclude = ' --exclude "fonts/*" --exclude "img/*" ';
   }
 
   // gulp needs something for src, so the file doesn't matter as long as it exists
-  return gulp.src('./src/index.html', {
-      read: false
-    })
-    .pipe(shell('aws s3 cp ./dist s3://'+ bucket +' --recursive '+ exclude +' --profile '+ AWS_PROFILE));
+  return gulp.src('./src/index.html', { read: false })
+    .pipe(shell('aws s3 sync ./dist s3://' + bucket[getEnv()] +' --delete'+ exclude +' --profile '+ AWS_PROFILE));
 });
+
 
 /**
  * Invalidate CloudFront cache
  * Must allow this command manually before using: aws configure set preview.cloudfront true
+ * use --local for clearing from your local dev environment
  */
 gulp.task('cf', function() {
-  var env = 'test'
-
-  if (argv.prod || argv.production) {
-    env = 'production';
-  }
-
   // gulp needs something for src, so the file doesn't matter as long as it exists
-  return gulp.src('./src/index.html', {
-      read: false
-    })
-    .pipe(shell('aws cloudfront create-invalidation --paths "/*" --distribution-id '+ cloundfront[env] +' --profile '));
+  return gulp.src('./src/index.html', { read: false })
+    .pipe(shell('aws cloudfront create-invalidation --paths "/*" --distribution-id '+ cloudfront[getEnv()] +' --profile '+ AWS_PROFILE));
 });
-
 
 
 // This compiles scss to css and serves the source files for debugging.
 gulp.task('default', ['sass-src', 'webserver-src', 'watch-src']);
 
 // This compiles everything to the dist directory and serves from there so you can test against what will be deployed.
-gulp.task('dist', ['sass', 'useref', 'inject:replace', 'copy-files', 'webserver', 'watch']);
+gulp.task('dist', ['sass', 'useref', 'inject:replace', 'copy-files',
+  'webserver', 'watch'
+]);
 
 // This compiles to the dist directory to prep for deployment. Does not launch a webserver.
 gulp.task('build', ['sass', 'useref', 'inject:replace', 'copy-files']);

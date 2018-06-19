@@ -1,0 +1,16 @@
+{
+	"page": "About",
+	"title": "About Company Name",
+	"events": [
+		{
+			"title": "The First Event",
+			"time": "12:00pm - 1:30pm",
+			"location": "Downtown Location"
+		},
+		{
+			"title": "The Second Event",
+			"time": "6:00pm - 8:00pm",
+			"location": "Rooftop Bar"
+		}
+	]
+}
