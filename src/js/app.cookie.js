@@ -1,11 +1,9 @@
-var app = app || {};
-
 /**
  * Cookie management
  */
 app.cookie = (function() {
     'use strict';
-    var name = 'myyl_admin',
+    var name = 'unique_name',
         hours = 10,
         self = {
             
@@ -41,7 +39,7 @@ app.cookie = (function() {
                     }
                 }
             }
-            value = cookie === null ? value : cookie+','+value;
+            value = cookie === null ? value : cookie +','+ value;
             self.set(value);
         },
 
@@ -59,18 +57,9 @@ app.cookie = (function() {
 
         clear: function(cname) {
             document.cookie = (cname ? cname : name) +'=; expires=-1; path=/';
-        },
-        
-        /**
-         * Check to see if cookies were previously allowed
-         */
-        check: function() {
-            if (self.get('myyl_accept_cookies')) {
-                self.acceptCookies(true);
-            }
         }
-
     };
+
     return self;
 })();
 

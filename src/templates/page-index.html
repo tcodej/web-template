@@ -1,0 +1,22 @@
+<script id="template-page-index" type="text/x-handlebars-template">
+  <div class="frame">
+    <h2>Sample index template.</h2>
+
+    <div id="share">
+      <div class="facebook">Share facebook</div>
+      <div class="twitter">Share twitter</div>
+    </div>
+
+    <div id="items"></div>
+  </div>
+</script>
+
+<script id="template-partial-items" type="text/x-handlebars-template">
+  <ul class="item">
+  {{#each items}}
+      <li>{{name}}</li>
+  {{/each}}
+  </ul>
+</script>
+
+

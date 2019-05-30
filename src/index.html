@@ -3,7 +3,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Company Name</title>
+    <title>{inject:title}</title>
     <meta name="build" content="{inject:build-date}">
     <meta name="env" content="{inject:env}">
 
@@ -12,23 +12,24 @@
     <meta http-equiv="Expires" content="0">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Google description.">
+    <meta name="description" content="{inject:description}">
 
+    <meta property="fb:app_id" content="{inject:fb-app-id}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{inject:domain}">
-    <meta property="og:title" content="Company Name">
-    <meta property="og:image" content="{inject:domain}/img/share-facebook.png">
-    <meta property="og:description" content="Facebook description.">
+    <meta property="og:title" content="{inject:title}">
+    <meta property="og:image" content="{inject:domain}/img/share-facebook.png{inject:cache-buster}">
+    <meta property="og:description" content="{inject:description}">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@twitterhandle">
-    <meta name="twitter:creator" content="@twitterhandle">
-    <meta name="twitter:title" content="Company Name">
-    <meta name="twitter:description" content="Twitter description.">
-    <meta name="twitter:image" content="{inject:domain}/img/share-twitter.png">
+    <meta name="twitter:site" content="@twitter">
+    <meta name="twitter:creator" content="@twitter">
+    <meta name="twitter:title" content="{inject:title}">
+    <meta name="twitter:description" content="{inject:description}">
+    <meta name="twitter:image" content="{inject:domain}/img/share-twitter.png{inject:cache-buster}">
 
     <link rel="shortcut icon" href="/favicon.ico">
-
+    
     <!-- build:css css/style.min.css -->
     <link rel="stylesheet" href="css/main.css" type="text/css">
     <!-- endbuild -->
@@ -49,9 +50,9 @@
     <div id="wrapper">
       <header>
         <div class="frame">
-          <h1>Site Name</h1>
+          <h1><a href="/">Site Name</a></h1>
           <nav>
-            <a href="#" title="Home">Home</a>
+            <a href="/" title="Home">Home</a>
             <a href="#about" title="About">About</a>
           </nav>
         </div>
@@ -63,89 +64,41 @@
         </div>
       </header>
 
-      <section id="page"></section>
+      <div id="page"></div>
 
       <footer>
         <div class="frame">
-          <p>© <span id="this-year">2018</span> Company Name. All Rights Reserved.</p>
+          <p>© <span id="this-year">2019</span> Company Name. All Rights Reserved.</p>
         </div>
       </footer>
     </div>
-      
-      
+
+    <div id="modal"></div>
     <div id="loader" class="is-active"><div class="loading"></div></div>
 
     <!-- build:js js/main.min.js -->
-    <script src="js/vendor/jquery-3.3.1.min.js"></script>
-    <script src="js/vendor/handlebars-v4.0.11.min.js"></script>
-    <script src="js/app.main.js"></script>
-    <script src="js/app.cookie.js"></script>
+    <script src="js/vendor/jquery-3.4.0.min.js"></script>
+    <script src="js/vendor/handlebars-v4.1.2.js"></script>
+    <script src="js/app.global.js"></script>
+    <script src="js/app.shim.js"></script>
+    <script src="js/app.share.js"></script>
     <script src="js/app.service.js"></script>
+    <script src="js/app.cookie.js"></script>
+    <script src="js/app.main.js"></script>
     <!-- endbuild -->
 
+    <script>
+      window.fbAsyncInit = function() {
+        app.share.initFacebook();
+      };
 
-
-
-    <!-- page templates -->
-
-    <script id="template-page-index" type="text/x-handlebars-template">
-      <div class="frame">
-        <h2>{{title}}</h2>
-        {{> carousel carousel}}
-      </div>
-    </script>
-
-
-
-    <script id="template-page-about" type="text/x-handlebars-template">
-      <div class="frame">
-        <h2>{{title}}</h2>
-        {{#each events}}
-          {{>event}}
-        {{/each}}
-      </div>
-    </script>
-    
-
-
-
-    <!-- partials -->
-    
-    <script id="partial-carousel" type="text/x-handlebars-template">
-      <div class="carousel-container">
-
-        <div class="carousel">
-          <div class="slide-container">
-          {{#each slides}}
-            {{#if video}}
-            <div class="slide" data-index="{{@index}}">
-              <p>Video slide</p>
-            </div>
-            {{else}}
-            <div class="slide" data-index="{{@index}}" data-title="{{title}}" style="background-image: url({{image}});">
-              <img src="img/slide-transparent.gif" class="slide-content">
-            </div>
-            {{/if}}
-          {{/each}}
-          </div>
-        {{#ifMultiple slides.length}}
-          <div class="control prev">
-            <div class="arrow prev" data-dir="prev"></div>
-          </div>
-          <div class="control next">
-            <div class="arrow next" data-dir="next"></div>
-          </div>
-        {{/ifMultiple}}
-        </div>
-      </div>
-    </script>
-
-
-    <script id="partial-event" type="text/x-handlebars-template">
-      <div class="event">
-        <h3>{{title}}</h3>
-        <p>{{time}} - {{location}}</p>
-      </div>
+      (function(d, s, id){
+         var js, fjs = d.getElementsByTagName(s)[0];
+         if (d.getElementById(id)) {return;}
+         js = d.createElement(s); js.id = id;
+         js.src = "//connect.facebook.net/en_US/sdk.js";
+         fjs.parentNode.insertBefore(js, fjs);
+       }(document, 'script', 'facebook-jssdk'));
     </script>
 
     <!-- external templates rendered here -->

@@ -6,28 +6,9 @@ app.service = (function() {
 
     var self = {
 
-        init: function() {
-            switch (location.hostname) {
-                case 'localhost':
-                    mode = 'local';
-                break;
-                case 'www.ylpwsdev.com':
-                    mode = 'dev';
-                break;
-                case 'www.ylpws.com':
-                    mode = 'test';
-                break;
-                case 'www.myyl.com':
-                case 'myyl.com':
-                    mode = 'live';
-                break;
-            }
-            //console.log('Mode: '+ mode);
-        },
-
         /**
          * Connect to server (GET, POST, PATCH, DELETE), get response, optionally send data.
-         * dataType defaults to 'json' except for the api/support/profile/ endpoint which requires 'text'
+         * dataType defaults to 'json'
          */
         getResponse: function(obj, callback, errorcallback, dataType) {
             $.ajax({
@@ -38,11 +19,15 @@ app.service = (function() {
                 cache: false,
                 dataType: dataType ? dataType : 'json',
                 data: JSON.stringify(obj.data),
+
                 success: function(response) {
+                    console.log('success');
                     if (typeof callback == 'function') callback(response);
                 },
+
                 error: function(jqXHR, textStatus, errorThrown) {
-                    if (typeof errorcallback == 'function') errorcallback(self.parseError(jqXHR.responseJSON));
+                    console.log('error');
+                    if (typeof errorcallback == 'function') errorcallback(jqXHR.responseJSON);
                 }
             });
         },
@@ -54,17 +39,28 @@ app.service = (function() {
             if (endpoint == undefined) {
                 endpoint = '';
             }
+
             $.getJSON(endpoint)
                 .done(function(response) {
                     if (typeof callback == 'function') callback(response);
                 })
+
                 .fail(function(response) {
                     console.error('Error connecting to '+ dataURL[mode] + endpoint +'. Probably invalid JSON.');
                     if (typeof errorcallback == 'function') errorcallback(response);
                 }
             );
-        }
+        },
 
+        /**
+         * Get the high scores
+         */
+        loadExample: function(callback, errorcallback) {
+            self.getResponse({
+                url: apiURL[mode] +'items.json',
+                method: 'GET'
+            }, callback, errorcallback);
+        }
     };
     return self;
 }());
