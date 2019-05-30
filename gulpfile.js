@@ -70,7 +70,7 @@ const AWS_PROFILE = 'YOUR_PROFILE',
 /**
  * Clear out the dist directory and compiled css in the src directory
  */
-gulp.task('clean', function () {
+gulp.task('clean', () => {
   return del(['./src/css/**/*.css', './dist']);
 });
 
@@ -78,7 +78,7 @@ gulp.task('clean', function () {
 /**
  * Compile sass to the src/css directory. Let useref combine the files and copy to dist/css
  */
-gulp.task('sass', function() {
+gulp.task('sass', () => {
   return gulp.src('./src/scss/**/*.scss')
     .pipe(sass.sync({
       outputStyle: 'compressed'
@@ -90,7 +90,7 @@ gulp.task('sass', function() {
 /**
  * Compile sass but don't compress.
  */
-gulp.task('sass-src', function() {
+gulp.task('sass-src', () => {
   return gulp.src('./src/scss/**/*.scss')
     .pipe(sourcemaps.init())
     .pipe(sass.sync().on('error', sass.logError))
@@ -102,7 +102,7 @@ gulp.task('sass-src', function() {
 /**
  * Minify, replace .js and .css paths in index.html using gulp-useref and copy to the dist directory
  */
-gulp.task('useref', function() {
+gulp.task('useref', () => {
   return gulp.src('./src/*.html')
     .pipe(useref())
     .pipe(gulpif('*.js', uglify()))
@@ -114,7 +114,7 @@ gulp.task('useref', function() {
 /**
  * Replace one string with another when parsing html files for build.
  */
-gulp.task('inject:replace', function() {
+gulp.task('inject:replace', () => {
     var now = Date.now();
 
     return gulp.src('./dist/**/*.html')
@@ -142,7 +142,7 @@ gulp.task('inject:replace', function() {
 /**
  * Simply copy supporting files from src to dist
  */
-gulp.task('copy-files', function(done) {
+gulp.task('copy-files', (done) => {
   // list of folders in src directory that should be copied directly to dist when building
   var folders = ['img', 'fonts', 'json', 'templates'];
 
@@ -163,14 +163,14 @@ gulp.task('copy-files', function(done) {
     .pipe(gulp.dest('./dist'))
     .pipe(touch());
 
-    done();
+  done();
 });
 
 
 /**
  * Turn on maintenance mode - see the var mantenanceMode above
  */
-gulp.task('maintenance', function(done) {
+gulp.task('maintenance', (done) => {
   if (maintenanceMode[getEnv()] === true) {
     console.log('Maintenance mode is on for '+ getEnv());
 
@@ -188,30 +188,30 @@ gulp.task('maintenance', function(done) {
 /**
  * Watch for updates and recompile
  */
-const watch = (done) => {
+gulp.task('watch', (done) => {
   gulp.watch('./src/*.html', gulp.series('useref', 'inject:replace'));
   gulp.watch('./src/js/*.js', gulp.series('useref'));
   gulp.watch('./src/scss/**/*.scss', gulp.series('sass', 'useref'));
 
   done();
-};
+});
 
 
 
 /**
  * Watch for updates and recompile when serving the source files
  */
-const watchSrc = (done) => {
+gulp.task('watchSrc', (done) => {
   gulp.watch('./src/scss/**/*.scss', gulp.series('sass-src'));
 
   done();
-};
+});
 
 
 /**
  * Run this to periodically sanity check your js formatting
  */
-gulp.task('lint', function() {
+gulp.task('lint', () => {
   return gulp.src(['./src/js/*.js', './gulpfile.js', '../lambda/*.js'])
     .pipe(jshint({ esversion: 6 }))
     .pipe(jshint.reporter('jshint-stylish'))
@@ -222,7 +222,7 @@ gulp.task('lint', function() {
 /**
  * If you don't want to use your own webserver, use this
  */
-gulp.task('webserver', function(done) {
+gulp.task('webserver', (done) => {
   gulp.src('./dist')
     .pipe(webserver({
       livereload: false,
@@ -231,11 +231,11 @@ gulp.task('webserver', function(done) {
       port: 8000
     }));
 
-    done();
+  done();
 });
 
 
-gulp.task('webserver-src', function(done) {
+gulp.task('webserver-src', (done) => {
   gulp.src('./src')
     .pipe(webserver({
       livereload: false,
@@ -244,7 +244,7 @@ gulp.task('webserver-src', function(done) {
       port: 8000
     }));
 
-    done();
+  done();
 });
 
 
@@ -252,7 +252,7 @@ gulp.task('webserver-src', function(done) {
  * Local dev command line deploy
  * You'll need the AWS CLI installed and a profile set up in ~/.aws/config
  */
-gulp.task('deploy', function() {
+gulp.task('deploy', () => {
   // when testing, exclude some non-changing items to save upload time
   let exclude = '';
 
@@ -277,7 +277,7 @@ gulp.task('deploy', function() {
  * Invalidate CloudFront cache
  * Must allow this command manually before using: aws configure set preview.cloudfront true
  */
-gulp.task('cf', function() {
+gulp.task('cf', () => {
   return exec('aws cloudfront create-invalidation --paths "/*" --distribution-id '+ cloudfront[getEnv()] +' --profile '+ AWS_PROFILE,
     function (err, stdout, stderr) {
       console.log(stdout);
@@ -288,10 +288,10 @@ gulp.task('cf', function() {
 
 
 // This compiles scss to css and serves the source files for debugging.
-gulp.task('default', gulp.series('sass-src', 'webserver-src', watchSrc));
+gulp.task('default', gulp.series('sass-src', 'webserver-src', 'watchSrc'));
 
 // This compiles everything to the dist directory and serves from there so you can test against what will be deployed.
-gulp.task('dist', gulp.series('sass', 'useref', 'copy-files', 'inject:replace', 'maintenance', 'webserver', watch));
+gulp.task('dist', gulp.series('sass', 'useref', 'copy-files', 'inject:replace', 'maintenance', 'webserver', 'watch'));
 
 // This compiles to the dist directory to prep for deployment. Does not launch a webserver.
 gulp.task('build', gulp.series('sass', 'useref', 'copy-files', 'inject:replace', 'maintenance'));
