@@ -1,3 +1,5 @@
+var app = app || {};
+
 app.share = (function() {
     var picURL = {
             local: 'http://test.example.com/',

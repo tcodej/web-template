@@ -1,3 +1,6 @@
+var mode = 'test',
+    app = app || {};
+
 /**
  * Page/view manager, handles some common elements and helper functions
  */
@@ -88,6 +91,7 @@ app.main = (function() {
          * Called on page load
          */
         init: function() {
+            app.service.init();
             self.initHandlebars();
             $('#this-year').text(new Date().getFullYear());
             $('#btn-menu').on('click', self.toggleNav);

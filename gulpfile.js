@@ -212,7 +212,7 @@ gulp.task('watchSrc', (done) => {
  * Run this to periodically sanity check your js formatting
  */
 gulp.task('lint', () => {
-  return gulp.src(['./src/js/*.js', './gulpfile.js', '../lambda/*.js'])
+  return gulp.src(['./src/js/*.js', './gulpfile.js'])
     .pipe(jshint({ esversion: 6 }))
     .pipe(jshint.reporter('jshint-stylish'))
     .pipe(jshint.reporter('fail'));

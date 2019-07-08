@@ -1,3 +1,10 @@
+var app = app || {},
+
+    apiURL = {
+        local: '/json/',
+        test: '/json/',
+        live: '/json/'
+    };
 /**
  * Manages API calls and callbacks
  */
@@ -5,6 +12,22 @@ app.service = (function() {
     "use strict";
 
     var self = {
+
+        init: function() {
+            switch (location.hostname) {
+                case 'localhost':
+                    mode = 'local';
+                break;
+                case 'test.example.com':
+                    mode = 'test';
+                break;
+                case 'www.example.com':
+                case 'example.com':
+                    mode = 'live';
+                break;
+            }
+            console.log('Mode: '+ mode);
+        },
 
         /**
          * Connect to server (GET, POST, PATCH, DELETE), get response, optionally send data.
