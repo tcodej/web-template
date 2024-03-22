@@ -9,20 +9,25 @@
     "type": "git",
     "url": "https://github.com/tcodej/web-template"
   },
-  "dependencies": {},
   "devDependencies": {
+    "del": "^4.1.1",
     "gulp": "*",
     "gulp-clean": "*",
+    "gulp-htmlmin": "*",
     "gulp-if": "*",
     "gulp-inject-string": "*",
     "gulp-sass": "*",
     "gulp-shell": "*",
+    "gulp-sourcemaps": "*",
     "gulp-uglify": "*",
-    "gulp-htmlmin": "*",
     "gulp-useref": "*",
     "gulp-watch": "*",
     "gulp-webserver": "*",
-    "yargs": "*",
-    "translate-json-object": "*"
+    "node-sass": "^9.0.0",
+    "translate-json-object": "*",
+    "yargs": "*"
+  },
+  "dependencies": {
+    "lazypipe": "^1.0.2"
   }
 }
